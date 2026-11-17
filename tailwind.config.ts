@@ -10,20 +10,36 @@ export default {
   theme: {
     extend: {
       colors: {
+        slate: {
+          950: "#070B14",
+          900: "#0C1322",
+          850: "#111B30",
+          800: "#1A2845",
+          750: "#22355A",
+          700: "#2D4370",
+        },
         navy: {
-          950: "#060B18", // Deepest background
-          900: "#0B132B", // Card background
-          850: "#101A38", // Elevated cards / hovering
-          800: "#1C2A4E", // Borders
-          700: "#2B3C68",
-          600: "#3E5288",
+          950: "#070B14",
+          900: "#0C1322",
+          850: "#111B30",
+          800: "#1A2845",
+          700: "#283C66",
+        },
+        brand: {
+          cyan: "#0EA5E9",
+          blue: "#3B82F6",
+          indigo: "#6366F1",
+          emerald: "#10B981",
+          amber: "#F59E0B",
+          rose: "#F43F5E",
         },
         sports: {
-          green: "#10B981", // Primary accent
-          "green-hover": "#059669",
-          "green-light": "#34D399",
-          "green-glow": "rgba(16, 185, 129, 0.15)",
-          cyan: "#06B6D4",
+          green: "#0EA5E9", // Default primary to modern electric cyan/blue
+          "green-hover": "#0284C7",
+          "green-light": "#38BDF8",
+          emerald: "#10B981",
+          cyan: "#0EA5E9",
+          blue: "#3B82F6",
           amber: "#F59E0B",
           rose: "#F43F5E",
         },
@@ -32,10 +48,10 @@ export default {
         sans: [
           "-apple-system",
           "BlinkMacSystemFont",
+          "Inter",
           "Segoe UI",
           "Roboto",
           "Helvetica Neue",
-          "Arial",
           "sans-serif",
         ],
       },

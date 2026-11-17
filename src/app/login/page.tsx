@@ -68,7 +68,6 @@ function LoginForm() {
       }
 
       if (data.user) {
-        // Query user profile to route correctly
         const { data: profile } = await supabase
           .from("profiles")
           .select("role, is_active")
@@ -105,17 +104,16 @@ function LoginForm() {
     }
   };
 
-  // Demo accounts helper
   const fillDemo = (email: string) => {
     setValue("email", email);
     setValue("password", "AthleteCare@2026");
   };
 
   return (
-    <div className="glass-card py-8 px-6 sm:px-10 rounded-2xl shadow-2xl border border-navy-800">
+    <div className="glass-card py-8 px-6 sm:px-10 rounded-2xl shadow-2xl border border-white/[0.08] bg-slate-900/90">
       {registeredNotice && (
-        <div className="mb-5 p-3.5 rounded-xl bg-sports-green/10 border border-sports-green/30 flex items-start gap-2.5 text-xs text-sports-green">
-          <CheckCircle2 className="w-4 h-4 text-sports-green shrink-0 mt-0.5" />
+        <div className="mb-5 p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-start gap-2.5 text-xs text-cyan-400">
+          <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
           <div>
             <strong className="block font-bold">Registration Confirmed!</strong>
             Please enter your password below to access your AthleteCare dashboard.
@@ -144,7 +142,7 @@ function LoginForm() {
               {...register("email")}
               type="email"
               placeholder="athlete@athletecare.in"
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-900 border border-navy-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-sports-green transition-colors"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
           {errors.email && (
@@ -160,7 +158,7 @@ function LoginForm() {
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs text-sports-green hover:underline font-medium"
+              className="text-xs text-cyan-400 hover:underline font-medium"
             >
               Forgot password?
             </Link>
@@ -173,7 +171,7 @@ function LoginForm() {
               {...register("password")}
               type="password"
               placeholder="••••••••••••"
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-navy-900 border border-navy-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-sports-green transition-colors"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
           {errors.password && (
@@ -185,10 +183,10 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm bg-sports-green hover:bg-sports-green-hover text-navy-950 transition-all duration-200 shadow-lg shadow-sports-green/20 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm bg-slate-100 hover:bg-white text-slate-950 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
         >
           {loading ? (
-            <div className="w-5 h-5 border-2 border-navy-950 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
           ) : (
             <>
               <span>Sign In</span>
@@ -198,60 +196,44 @@ function LoginForm() {
         </button>
       </form>
 
-      {/* Demo Credentials Section for College Evaluation */}
-      <div className="mt-8 pt-6 border-t border-navy-800">
-        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-sports-green" />
-          College Demo Quick-Fill:
+      {/* Demo Credentials Section */}
+      <div className="mt-8 pt-6 border-t border-slate-800">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          Demo Fast-Select:
         </p>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <button
             type="button"
             onClick={() => fillDemo("athlete@athletecare.in")}
-            className="p-2.5 rounded-xl bg-navy-900 hover:bg-navy-850 border border-navy-800 text-left transition-colors group"
+            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
           >
-            <span className="font-bold text-emerald-400 block group-hover:text-emerald-300">
-              Athlete Demo
-            </span>
-            <span className="text-[10px] text-slate-400 block truncate">
-              athlete@athletecare.in
-            </span>
+            <span className="font-bold text-cyan-400 block">Athlete Demo</span>
+            <span className="text-[10px] text-slate-400 block truncate">athlete@athletecare.in</span>
           </button>
           <button
             type="button"
             onClick={() => fillDemo("coach@athletecare.in")}
-            className="p-2.5 rounded-xl bg-navy-900 hover:bg-navy-850 border border-navy-800 text-left transition-colors group"
+            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
           >
-            <span className="font-bold text-cyan-400 block group-hover:text-cyan-300">
-              Coach Demo
-            </span>
-            <span className="text-[10px] text-slate-400 block truncate">
-              coach@athletecare.in
-            </span>
+            <span className="font-bold text-blue-400 block">Coach Demo</span>
+            <span className="text-[10px] text-slate-400 block truncate">coach@athletecare.in</span>
           </button>
           <button
             type="button"
             onClick={() => fillDemo("medical@athletecare.in")}
-            className="p-2.5 rounded-xl bg-navy-900 hover:bg-navy-850 border border-navy-800 text-left transition-colors group"
+            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
           >
-            <span className="font-bold text-purple-400 block group-hover:text-purple-300">
-              Medical Staff
-            </span>
-            <span className="text-[10px] text-slate-400 block truncate">
-              medical@athletecare.in
-            </span>
+            <span className="font-bold text-purple-400 block">Medical Staff</span>
+            <span className="text-[10px] text-slate-400 block truncate">medical@athletecare.in</span>
           </button>
           <button
             type="button"
             onClick={() => fillDemo("admin@athletecare.in")}
-            className="p-2.5 rounded-xl bg-navy-900 hover:bg-navy-850 border border-navy-800 text-left transition-colors group"
+            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
           >
-            <span className="font-bold text-rose-400 block group-hover:text-rose-300">
-              Admin Demo
-            </span>
-            <span className="text-[10px] text-slate-400 block truncate">
-              admin@athletecare.in
-            </span>
+            <span className="font-bold text-amber-400 block">Admin Demo</span>
+            <span className="text-[10px] text-slate-400 block truncate">admin@athletecare.in</span>
           </button>
         </div>
       </div>
@@ -261,7 +243,7 @@ function LoginForm() {
           Don&apos;t have an athlete account?{" "}
           <Link
             href="/register"
-            className="text-sports-green hover:underline font-semibold"
+            className="text-cyan-400 hover:underline font-semibold"
           >
             Register here
           </Link>
@@ -273,20 +255,18 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 subtle-gradient relative">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-sports-green/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen bg-[#070B14] flex flex-col justify-center py-12 sm:px-6 lg:px-8 subtle-gradient relative">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
         <Link href="/" className="inline-flex items-center gap-3 group">
-          <div className="w-12 h-12 rounded-2xl bg-sports-green flex items-center justify-center text-navy-950 shadow-lg shadow-sports-green/20 group-hover:scale-105 transition-transform duration-200">
-            <Activity className="w-7 h-7 stroke-[2.5]" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-slate-950 shadow-md group-hover:scale-105 transition-transform duration-200">
+            <Activity className="w-6 h-6 stroke-[2.5]" />
           </div>
         </Link>
-        <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">
-          Athlete<span className="text-sports-green">Care</span> Portal
+        <h2 className="mt-4 text-2xl sm:text-3xl font-black text-slate-100 tracking-tight">
+          Athlete<span className="text-cyan-400">Care</span> Portal
         </h2>
-        <p className="mt-1.5 text-xs text-slate-400">
-          Sign in to access your daily sports wellness & readiness analytics
+        <p className="mt-1 text-xs text-slate-400">
+          Sign in to access daily sports wellness, ACWR & readiness analytics
         </p>
       </div>
 
@@ -294,7 +274,7 @@ export default function LoginPage() {
         <Suspense
           fallback={
             <div className="glass-card p-8 rounded-2xl h-80 flex items-center justify-center">
-              <div className="w-6 h-6 border-2 border-sports-green border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
             </div>
           }
         >
