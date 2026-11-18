@@ -216,23 +216,31 @@ export function DashboardLayout({ profile, children }: DashboardLayoutProps) {
   const roleTheme = {
     athlete: {
       badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-      activeBg: "bg-slate-100 text-slate-950 font-bold shadow-md shadow-white/5",
+      activeBg: "bg-slate-800/90 text-cyan-300 font-semibold border-l-2 border-cyan-400 shadow-sm shadow-cyan-950/20",
+      activeIcon: "text-cyan-400 stroke-[2.2]",
       indicator: "bg-cyan-400",
+      badgeActive: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30 font-bold",
     },
     coach: {
       badge: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      activeBg: "bg-slate-100 text-slate-950 font-bold shadow-md shadow-white/5",
+      activeBg: "bg-slate-800/90 text-blue-300 font-semibold border-l-2 border-blue-400 shadow-sm shadow-blue-950/20",
+      activeIcon: "text-blue-400 stroke-[2.2]",
       indicator: "bg-blue-400",
+      badgeActive: "bg-blue-500/15 text-blue-300 border-blue-500/30 font-bold",
     },
     medical: {
       badge: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-      activeBg: "bg-slate-100 text-slate-950 font-bold shadow-md shadow-white/5",
+      activeBg: "bg-slate-800/90 text-purple-300 font-semibold border-l-2 border-purple-400 shadow-sm shadow-purple-950/20",
+      activeIcon: "text-purple-400 stroke-[2.2]",
       indicator: "bg-purple-400",
+      badgeActive: "bg-purple-500/15 text-purple-300 border-purple-500/30 font-bold",
     },
     admin: {
       badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      activeBg: "bg-slate-100 text-slate-950 font-bold shadow-md shadow-white/5",
+      activeBg: "bg-slate-800/90 text-amber-300 font-semibold border-l-2 border-amber-400 shadow-sm shadow-amber-950/20",
+      activeIcon: "text-amber-400 stroke-[2.2]",
       indicator: "bg-amber-400",
+      badgeActive: "bg-amber-500/15 text-amber-300 border-amber-500/30 font-bold",
     },
   }[profile.role];
 
@@ -302,18 +310,29 @@ export function DashboardLayout({ profile, children }: DashboardLayoutProps) {
                         ? roleTheme.activeBg
                         : "text-slate-400 hover:text-slate-100 hover:bg-slate-850/60"
                     } ${collapsed ? "justify-center" : ""}`}
-                    title={collapsed ? item.label : undefined}
                   >
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-transform duration-150 group-hover:scale-105 ${
-                        isActive ? "text-slate-950 stroke-[2.5]" : "text-slate-400"
+                        isActive ? roleTheme.activeIcon : "text-slate-400 group-hover:text-slate-200"
                       }`}
                     />
                     {!collapsed && (
                       <div className="flex-1 flex items-center justify-between overflow-hidden">
-                        <span className="truncate font-semibold">{item.label}</span>
-                        {!isActive && item.badge && (
-                          <span className="text-[9px] font-mono text-slate-400 px-1.5 py-0.5 rounded bg-slate-800/60 border border-slate-700/40">
+                        <span
+                          className={`truncate font-semibold ${
+                            isActive ? "text-slate-100" : "text-slate-300 group-hover:text-slate-100"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                        {item.badge && (
+                          <span
+                            className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
+                              isActive
+                                ? roleTheme.badgeActive
+                                : "bg-slate-900 text-slate-400 border-slate-800"
+                            }`}
+                          >
                             {item.badge}
                           </span>
                         )}

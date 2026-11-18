@@ -6,12 +6,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@/lib/validations";
 import { createClient } from "@/lib/supabase/client";
+import { SportPositionSelector } from "@/components/ui/SportPositionSelector";
 import {
   Activity,
   Lock,
   Mail,
   User,
-  Trophy,
   ArrowRight,
   AlertCircle,
   CheckCircle2,
@@ -35,6 +35,7 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -43,8 +44,8 @@ export default function RegisterPage() {
       email: "",
       password: "",
       confirmPassword: "",
-      primarySport: "",
-      playingPosition: "",
+      primarySport: "Cricket",
+      playingPosition: "Top-Order Batsman",
     },
   });
 
@@ -53,47 +54,79 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            full_name: values.fullName,
-          },
-        },
-      });
-
-      if (error) {
-        setServerError(error.message);
-        setLoading(false);
-        return;
-      }
-
-      if (data.user) {
-        if (values.primarySport || values.playingPosition) {
-          await supabase
-            .from("profiles")
-            .update({
-              primary_sport: values.primarySport || null,
-              playing_position: values.playingPosition || null,
-            })
-            .eq("id", data.user.id);
-        }
-
-        // Canonical flow: explicit sign-in
-        await supabase.auth.signOut();
-
-        setSuccessData({
+      // 1. Primary: Server-side registration endpoint (bypasses browser adblockers and CORS)
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           fullName: values.fullName,
           email: values.email,
+          password: values.password,
+          primarySport: values.primarySport,
+          playingPosition: values.playingPosition,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to complete registration.");
+      }
+
+      setSuccessData({
+        fullName: values.fullName,
+        email: values.email,
+      });
+      setLoading(false);
+    } catch (apiErr: unknown) {
+      // Fallback: Direct Supabase client sign up
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            data: {
+              full_name: values.fullName,
+            },
+          },
         });
+
+        if (error) {
+          setServerError(error.message);
+          setLoading(false);
+          return;
+        }
+
+        if (data.user) {
+          if (values.primarySport || values.playingPosition) {
+            await supabase
+              .from("profiles")
+              .update({
+                primary_sport: values.primarySport || null,
+                playing_position: values.playingPosition || null,
+              })
+              .eq("id", data.user.id);
+          }
+
+          await supabase.auth.signOut();
+
+          setSuccessData({
+            fullName: values.fullName,
+            email: values.email,
+          });
+          setLoading(false);
+          return;
+        }
+      } catch (clientErr: unknown) {
+        const msg =
+          apiErr instanceof Error
+            ? apiErr.message
+            : clientErr instanceof Error
+            ? clientErr.message
+            : "Failed to complete registration. Please check your network.";
+        setServerError(msg);
         setLoading(false);
       }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to complete registration.";
-      setServerError(msg);
-      setLoading(false);
     }
   };
 
@@ -207,37 +240,13 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Sport & Position */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Sport
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <Trophy className="w-4 h-4" />
-                    </div>
-                    <input
-                      {...register("primarySport")}
-                      type="text"
-                      placeholder="e.g. Cricket"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Position
-                  </label>
-                  <input
-                    {...register("playingPosition")}
-                    type="text"
-                    placeholder="e.g. Fast Bowler"
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
-                  />
-                </div>
-              </div>
+              {/* Sport & Position Structured Selectors */}
+              <SportPositionSelector
+                initialSport="Cricket"
+                initialPosition="Top-Order Batsman"
+                onSportChange={(sport) => setValue("primarySport", sport)}
+                onPositionChange={(pos) => setValue("playingPosition", pos)}
+              />
 
               {/* Password */}
               <div>

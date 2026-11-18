@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { profileUpdateSchema } from "@/lib/validations";
 import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/types/database";
+import { SportPositionSelector } from "@/components/ui/SportPositionSelector";
 import {
   User,
   Mail,
@@ -38,6 +39,7 @@ export function ProfileClient({ initialProfile }: ProfileClientProps) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileUpdateSchema),
@@ -271,31 +273,13 @@ export function ProfileClient({ initialProfile }: ProfileClientProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Primary Sport
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Cricket, Football, Badminton, Athletics"
-                {...register("primary_sport")}
-                className="w-full px-3 py-2.5 bg-navy-850 border border-navy-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-sports-green"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Playing Position / Specialization
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Fast Bowler, Midfielder, Sprinter"
-                {...register("playing_position")}
-                className="w-full px-3 py-2.5 bg-navy-850 border border-navy-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-sports-green"
-              />
-            </div>
-          </div>
+          {/* Sport & Position Structured Selectors */}
+          <SportPositionSelector
+            initialSport={profile.primary_sport || "Cricket"}
+            initialPosition={profile.playing_position || "Top-Order Batsman"}
+            onSportChange={(sport) => setValue("primary_sport", sport)}
+            onPositionChange={(pos) => setValue("playing_position", pos)}
+          />
 
           <div className="pt-2">
             <button

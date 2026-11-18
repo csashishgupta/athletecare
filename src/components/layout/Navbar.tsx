@@ -28,14 +28,14 @@ export function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-300">
-            <Link href="#architecture" className="hover:text-cyan-400 transition-colors">
-              Platform Architecture
+            <Link href="#simulator" className="hover:text-cyan-400 transition-colors">
+              Live Simulator
             </Link>
-            <Link href="#pillars" className="hover:text-cyan-400 transition-colors">
-              Core Pillars
+            <Link href="#portals" className="hover:text-cyan-400 transition-colors">
+              Role Portals
             </Link>
-            <Link href="#specs" className="hover:text-cyan-400 transition-colors">
-              Technical Specs
+            <Link href="#science" className="hover:text-cyan-400 transition-colors">
+              Sports Science
             </Link>
           </nav>
 
@@ -71,25 +71,25 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-white/[0.08] bg-[#070B14]/95 backdrop-blur-2xl px-4 pt-3 pb-5 space-y-3">
           <Link
-            href="#architecture"
+            href="#simulator"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800/50 rounded-lg"
           >
-            Platform Architecture
+            Live Simulator
           </Link>
           <Link
-            href="#pillars"
+            href="#portals"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800/50 rounded-lg"
           >
-            Core Pillars
+            Role Portals
           </Link>
           <Link
-            href="#specs"
+            href="#science"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800/50 rounded-lg"
           >
-            Technical Specs
+            Sports Science
           </Link>
           <div className="pt-3 border-t border-slate-800/80 flex items-center gap-2">
             <Link

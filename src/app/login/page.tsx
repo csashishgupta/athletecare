@@ -57,10 +57,30 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      let { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
+
+      // Self-healing: If email not confirmed, auto-confirm and retry once
+      if (error && error.message.toLowerCase().includes("email not confirmed")) {
+        try {
+          await fetch("/api/auth/auto-confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: values.email }),
+          });
+          // Retry sign-in
+          const retry = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+          });
+          data = retry.data;
+          error = retry.error;
+        } catch {
+          // Keep original error
+        }
+      }
 
       if (error) {
         setServerError(error.message);
