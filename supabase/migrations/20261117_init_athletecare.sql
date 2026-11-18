@@ -49,6 +49,11 @@ BEGIN
     'athlete' -- Default to athlete role (anti-privilege escalation)
   )
   ON CONFLICT (id) DO NOTHING;
+
+  -- Auto-confirm user email so login never fails with 'Email not confirmed'
+  UPDATE auth.users
+  SET email_confirmed_at = COALESCE(email_confirmed_at, now())
+  WHERE id = NEW.id;
   RETURN NEW;
 END;
 $$;
