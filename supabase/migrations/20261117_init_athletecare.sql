@@ -41,18 +41,24 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, email, role)
+  INSERT INTO public.profiles (id, full_name, email, role, primary_sport, playing_position)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
     NEW.email,
-    'athlete' -- Default to athlete role (anti-privilege escalation)
+    'athlete',
+    COALESCE(nullif(btrim(NEW.raw_user_meta_data ->> 'primary_sport'), ''), 'Cricket'),
+    COALESCE(nullif(btrim(NEW.raw_user_meta_data ->> 'playing_position'), ''), 'Top-Order Batsman')
   )
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT (id) DO UPDATE
+  SET
+    full_name = EXCLUDED.full_name,
+    primary_sport = COALESCE(EXCLUDED.primary_sport, public.profiles.primary_sport),
+    playing_position = COALESCE(EXCLUDED.playing_position, public.profiles.playing_position);
 
   -- Auto-confirm user email so login never fails with 'Email not confirmed'
   UPDATE auth.users
-  SET email_confirmed_at = COALESCE(email_confirmed_at, now())
+  SET email_confirmed_at = now()
   WHERE id = NEW.id;
   RETURN NEW;
 END;

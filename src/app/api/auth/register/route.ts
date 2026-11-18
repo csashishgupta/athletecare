@@ -42,6 +42,8 @@ export async function POST(req: NextRequest) {
       options: {
         data: {
           full_name: fullName.trim(),
+          primary_sport: primarySport || "Cricket",
+          playing_position: playingPosition || "Top-Order Batsman",
         },
       },
     });
