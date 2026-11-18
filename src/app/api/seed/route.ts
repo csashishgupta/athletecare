@@ -2,6 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST() {
+  // Production Safety Guard
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Seeding is forbidden in production environments." },
+      { status: 403 }
+    );
+  }
+
   const supabase = await createClient();
 
   const {
@@ -29,9 +37,10 @@ export async function POST() {
     .eq("role", "athlete");
 
   if (!athletes || athletes.length === 0) {
-    return NextResponse.json({
-      error: "No athletes found in the database to seed.",
-    }, { status: 400 });
+    return NextResponse.json(
+      { error: "No registered athletes found to seed." },
+      { status: 400 }
+    );
   }
 
   // Generate 7 days of realistic collegiate wellness logs
@@ -44,7 +53,6 @@ export async function POST() {
       recordDate.setDate(recordDate.getDate() - dayOffset);
       const dateStr = recordDate.toISOString().split("T")[0];
 
-      // Realistic sports biometric variation
       const sleepHours = 7.0 + Math.round((Math.random() * 2.0) * 10) / 10;
       const sleepQuality = 7 + Math.floor(Math.random() * 3);
       const waterIntake = 2600 + Math.floor(Math.random() * 1000);

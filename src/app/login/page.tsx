@@ -13,7 +13,6 @@ import {
   Mail,
   ArrowRight,
   AlertCircle,
-  Sparkles,
   CheckCircle2,
 } from "lucide-react";
 import { z } from "zod";
@@ -27,6 +26,8 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+
+  const isDev = process.env.NODE_ENV === "development";
 
   const {
     register,
@@ -104,9 +105,9 @@ function LoginForm() {
     }
   };
 
-  const fillDemo = (email: string) => {
-    setValue("email", email);
-    setValue("password", "AthleteCare@2026");
+  const fillDevDemo = (envEmailVar?: string) => {
+    if (!envEmailVar) return;
+    setValue("email", envEmailVar);
   };
 
   return (
@@ -141,7 +142,8 @@ function LoginForm() {
             <input
               {...register("email")}
               type="email"
-              placeholder="athlete@athletecare.in"
+              placeholder="name@athletecare.in"
+              autoComplete="email"
               className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
@@ -171,6 +173,7 @@ function LoginForm() {
               {...register("password")}
               type="password"
               placeholder="••••••••••••"
+              autoComplete="current-password"
               className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
@@ -196,47 +199,30 @@ function LoginForm() {
         </button>
       </form>
 
-      {/* Demo Credentials Section */}
-      <div className="mt-8 pt-6 border-t border-slate-800">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-          Demo Fast-Select:
-        </p>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <button
-            type="button"
-            onClick={() => fillDemo("athlete@athletecare.in")}
-            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
-          >
-            <span className="font-bold text-cyan-400 block">Athlete Demo</span>
-            <span className="text-[10px] text-slate-400 block truncate">athlete@athletecare.in</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo("coach@athletecare.in")}
-            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
-          >
-            <span className="font-bold text-blue-400 block">Coach Demo</span>
-            <span className="text-[10px] text-slate-400 block truncate">coach@athletecare.in</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo("medical@athletecare.in")}
-            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
-          >
-            <span className="font-bold text-purple-400 block">Medical Staff</span>
-            <span className="text-[10px] text-slate-400 block truncate">medical@athletecare.in</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo("admin@athletecare.in")}
-            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-left transition-colors"
-          >
-            <span className="font-bold text-amber-400 block">Admin Demo</span>
-            <span className="text-[10px] text-slate-400 block truncate">admin@athletecare.in</span>
-          </button>
+      {/* Development-only environment variable autofill helper (Gated strictly to dev) */}
+      {isDev && process.env.NEXT_PUBLIC_DEMO_ATHLETE_EMAIL && (
+        <div className="mt-6 pt-4 border-t border-slate-800/80">
+          <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-2">
+            Local Dev Helper (NODE_ENV=dev)
+          </p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => fillDevDemo(process.env.NEXT_PUBLIC_DEMO_ATHLETE_EMAIL)}
+              className="p-2 rounded-lg bg-slate-950 border border-slate-800 text-left text-slate-300 hover:border-slate-700 font-mono text-[11px]"
+            >
+              Fill Athlete
+            </button>
+            <button
+              type="button"
+              onClick={() => fillDevDemo(process.env.NEXT_PUBLIC_DEMO_COACH_EMAIL)}
+              className="p-2 rounded-lg bg-slate-950 border border-slate-800 text-left text-slate-300 hover:border-slate-700 font-mono text-[11px]"
+            >
+              Fill Coach
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="text-center mt-6">
         <span className="text-xs text-slate-400">

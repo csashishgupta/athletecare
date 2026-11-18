@@ -6,8 +6,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { wellnessRecordSchema } from "@/lib/validations";
 import { calculateReadinessScore } from "@/lib/calculations/readiness";
+import { submitWellnessCheckin } from "@/actions/athlete.actions";
 import { createClient } from "@/lib/supabase/client";
 import { WellnessRecord } from "@/types/database";
+import { WellnessHistoryTable } from "@/components/athlete/WellnessHistoryTable";
 import {
   HeartPulse,
   Moon,
@@ -19,8 +21,6 @@ import {
   Save,
   CheckCircle,
   AlertCircle,
-  Trash2,
-  Edit2,
   Sparkles,
 } from "lucide-react";
 import { z } from "zod";
@@ -42,7 +42,6 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Check if a record already exists for selected date
   const existingRecord = records.find((r) => r.record_date === selectedDate);
 
   const {
@@ -65,7 +64,6 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
     },
   });
 
-  // Watch values for live readiness preview
   const watchedSleep = watch("sleep_hours");
   const watchedSleepQuality = watch("sleep_quality");
   const watchedWater = watch("water_intake_ml");
@@ -82,7 +80,6 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
     soreness_level: Number(watchedSoreness) || 1,
   });
 
-  // Handle date change: populate existing data if found
   const handleDateChange = (newDate: string) => {
     setSelectedDate(newDate);
     setValue("record_date", newDate);
@@ -112,6 +109,14 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
     setLoading(true);
     setMessage(null);
 
+    const result = await submitWellnessCheckin(values);
+
+    if (!result.success) {
+      setMessage({ type: "error", text: result.error });
+      setLoading(false);
+      return;
+    }
+
     const calculatedScore = calculateReadinessScore({
       sleep_hours: values.sleep_hours,
       sleep_quality: values.sleep_quality,
@@ -121,7 +126,13 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
       soreness_level: values.soreness_level,
     }).totalScore;
 
-    const payload = {
+    setMessage({
+      type: "success",
+      text: `Daily wellness check-in for ${values.record_date} saved! Readiness score: ${calculatedScore}/100.`,
+    });
+
+    const newRecord: WellnessRecord = {
+      id: crypto.randomUUID(),
       athlete_id: athleteId,
       record_date: values.record_date,
       sleep_hours: values.sleep_hours,
@@ -133,31 +144,13 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
       activity_notes: values.activity_notes || null,
       wellness_notes: values.wellness_notes || null,
       readiness_score: calculatedScore,
+      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    // Upsert to prevent duplicate entries for the same athlete and date
-    const { data, error } = await supabase
-      .from("wellness_records")
-      .upsert(payload, { onConflict: "athlete_id, record_date" })
-      .select()
-      .single();
-
-    if (error) {
-      setMessage({ type: "error", text: error.message });
-      setLoading(false);
-      return;
-    }
-
-    setMessage({
-      type: "success",
-      text: `Daily wellness check-in for ${values.record_date} saved successfully! Readiness score: ${calculatedScore}/100.`,
-    });
-
-    // Update local state list
     setRecords((prev) => {
       const filtered = prev.filter((r) => r.record_date !== values.record_date);
-      return [data as WellnessRecord, ...filtered].sort(
+      return [newRecord, ...filtered].sort(
         (a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime()
       );
     });
@@ -249,12 +242,12 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
               >
                 {liveBreakdown.totalScore}
               </span>
-              <span className="text-xs text-slate-400 ml-1">/100</span>
+              <span className="text-xs text-slate-400"> / 100</span>
             </div>
           </div>
 
-          {/* Form Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Form Sliders */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* 1. Sleep Duration */}
             <div className="p-4 rounded-xl bg-navy-850/40 border border-navy-800 space-y-2">
               <div className="flex items-center justify-between">
@@ -262,26 +255,30 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
                   <Moon className="w-4 h-4 text-indigo-400" />
                   Sleep Duration (Hours)
                 </label>
-                <span className="text-xs font-bold text-indigo-400">
-                  {watchedSleep} hours
+                <span className="text-xs font-bold text-slate-100">
+                  {watchedSleep} hrs
                 </span>
               </div>
               <input
-                type="number"
-                step="0.5"
+                type="range"
                 min="0"
-                max="24"
+                max="14"
+                step="0.5"
                 {...register("sleep_hours", { valueAsNumber: true })}
-                className="w-full px-3 py-2 bg-navy-900 border border-navy-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-1 focus:ring-sports-green"
+                className="w-full accent-sports-green"
               />
-              <span className="text-[10px] text-slate-500 block">Target: 7.0 - 9.0 hours</span>
+              <div className="flex justify-between text-[10px] text-slate-500">
+                <span>0 hrs</span>
+                <span>8 hrs (Optimal)</span>
+                <span>14 hrs</span>
+              </div>
             </div>
 
             {/* 2. Sleep Quality */}
             <div className="p-4 rounded-xl bg-navy-850/40 border border-navy-800 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-                  <Moon className="w-4 h-4 text-indigo-400" />
+                  <Moon className="w-4 h-4 text-purple-400" />
                   Sleep Quality (1 to 10)
                 </label>
                 <span className="text-xs font-bold text-slate-100">
@@ -298,55 +295,37 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
               <div className="flex justify-between text-[10px] text-slate-500">
                 <span>1 (Restless)</span>
                 <span>5 (Average)</span>
-                <span>10 (Deeply restorative)</span>
+                <span>10 (Deep &amp; Rested)</span>
               </div>
             </div>
 
-            {/* 3. Water Intake (ml) */}
+            {/* 3. Water Intake */}
             <div className="p-4 rounded-xl bg-navy-850/40 border border-navy-800 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
                   <Droplets className="w-4 h-4 text-cyan-400" />
-                  Water Intake (ml)
+                  Hydration Target (ml)
                 </label>
-                <span className="text-xs font-bold text-cyan-400">
+                <span className="text-xs font-bold text-slate-100">
                   {watchedWater} ml
                 </span>
               </div>
               <input
-                type="number"
-                step="50"
-                min="0"
-                max="10000"
+                type="range"
+                min="500"
+                max="6000"
+                step="250"
                 {...register("water_intake_ml", { valueAsNumber: true })}
-                className="w-full px-3 py-2 bg-navy-900 border border-navy-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-1 focus:ring-sports-green"
+                className="w-full accent-sports-green"
               />
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setValue("water_intake_ml", (Number(watchedWater) || 0) + 250)}
-                  className="px-2 py-0.5 rounded bg-navy-800 text-[10px] text-slate-300 hover:bg-navy-700"
-                >
-                  +250 ml
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setValue("water_intake_ml", (Number(watchedWater) || 0) + 500)}
-                  className="px-2 py-0.5 rounded bg-navy-800 text-[10px] text-slate-300 hover:bg-navy-700"
-                >
-                  +500 ml
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setValue("water_intake_ml", 3000)}
-                  className="px-2 py-0.5 rounded bg-navy-800 text-[10px] text-slate-300 hover:bg-navy-700"
-                >
-                  Set 3000 ml
-                </button>
+              <div className="flex justify-between text-[10px] text-slate-500">
+                <span>500 ml</span>
+                <span>3000 ml (Target)</span>
+                <span>6000 ml</span>
               </div>
             </div>
 
-            {/* 4. Mood Rating */}
+            {/* 4. Mood & Readiness */}
             <div className="p-4 rounded-xl bg-navy-850/40 border border-navy-800 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
@@ -365,9 +344,9 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
                 className="w-full accent-sports-green"
               />
               <div className="flex justify-between text-[10px] text-slate-500">
-                <span>1 (Stressed / Down)</span>
+                <span>1 (Low / Stressed)</span>
                 <span>5 (Neutral)</span>
-                <span>10 (Energetic / Focused)</span>
+                <span>10 (Excited &amp; Energetic)</span>
               </div>
             </div>
 
@@ -375,7 +354,7 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
             <div className="p-4 rounded-xl bg-navy-850/40 border border-navy-800 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-                  <Zap className="w-4 h-4 text-sports-green" />
+                  <Zap className="w-4 h-4 text-rose-400" />
                   Fatigue Level (1 to 10)
                 </label>
                 <span className="text-xs font-bold text-slate-100">
@@ -472,85 +451,12 @@ export function WellnessFormClient({ athleteId, initialRecords }: WellnessFormCl
         </form>
       </div>
 
-      {/* Historical Wellness Records Table */}
-      <div className="glass-card rounded-2xl p-6 sm:p-8 border border-navy-800">
-        <h3 className="text-lg font-bold text-slate-100 mb-1">
-          Wellness History & Logs
-        </h3>
-        <p className="text-xs text-slate-400 mb-6">
-          Review previous records, edit entries, or track changes over time
-        </p>
-
-        {records.length === 0 ? (
-          <div className="text-center py-10 text-xs text-slate-400 border border-dashed border-navy-800 rounded-xl">
-            No wellness check-ins recorded yet. Submit your first check-in above.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase tracking-wider text-slate-400 border-b border-navy-800">
-                <tr>
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3">Sleep</th>
-                  <th className="pb-3">Water</th>
-                  <th className="pb-3">Mood</th>
-                  <th className="pb-3">Fatigue</th>
-                  <th className="pb-3">Soreness</th>
-                  <th className="pb-3">Score</th>
-                  <th className="pb-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-navy-800/60">
-                {records.map((r) => (
-                  <tr key={r.id} className="hover:bg-navy-850/40">
-                    <td className="py-3 font-semibold text-slate-200">
-                      {r.record_date}
-                    </td>
-                    <td className="py-3 text-slate-300">
-                      {r.sleep_hours}h ({r.sleep_quality}/10)
-                    </td>
-                    <td className="py-3 text-slate-300">
-                      {r.water_intake_ml} ml
-                    </td>
-                    <td className="py-3 text-slate-300">{r.mood_rating}/10</td>
-                    <td className="py-3 text-slate-300">{r.fatigue_level}/10</td>
-                    <td className="py-3 text-slate-300">{r.soreness_level}/10</td>
-                    <td className="py-3 font-bold">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] ${
-                          (r.readiness_score || 0) >= 80
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : (r.readiness_score || 0) >= 60
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                        }`}
-                      >
-                        {r.readiness_score || 0}/100
-                      </span>
-                    </td>
-                    <td className="py-3 text-right space-x-2">
-                      <button
-                        onClick={() => handleDateChange(r.record_date)}
-                        className="p-1 rounded text-slate-400 hover:text-sports-green"
-                        title="Edit record"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(r.id, r.record_date)}
-                        className="p-1 rounded text-slate-400 hover:text-rose-400"
-                        title="Delete record"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Historical Wellness Records Table Component */}
+      <WellnessHistoryTable
+        records={records}
+        onSelectDate={handleDateChange}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
